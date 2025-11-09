@@ -7,7 +7,7 @@ def earliest_year(s):
 
 qf7["first_year"] = qf7["Flights"].apply(earliest_year)
 
-#4 group mapping related to the question about ussr, russia, and USA.
+#group mapping related to the question about ussr, russia, and USA.
 core = {"United States", "Soviet Union", "Russia"}
 def to_group(c):
     return c if c in core else "Others"
