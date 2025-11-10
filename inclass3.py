@@ -1,0 +1,18 @@
+pipe = Pipeline([('scaler', StandardScaler(with_mean=False)), ('pca', PCA(random_state=88)), ('lr', LinearRegression())])
+max_components = min(300, X_train_pcr.shape[1])
+param_grid = {'pca__n_components': list(range(1, max_components+1))}
+cv = KFold(n_splits=5, shuffle=True, random_state=1)
+pcr_cv = GridSearchCV(pipe, param_grid, scoring='r2', cv=cv, n_jobs=-1, verbose=0)
+pcr_cv.fit(X_train_pcr, y_train)
+cv_res = pd.DataFrame(pcr_cv.cv_results_)[['param_pca__n_components','mean_test_score','std_test_score']].sort_values('param_pca__n_components')
+best_idx = cv_res['mean_test_score'].idxmax()
+best_r2 = float(cv_res.loc[best_idx, 'mean_test_score'])
+best_n = int(cv_res.loc[best_idx, 'param_pca__n_components'])
+sem = float(cv_res.loc[best_idx, 'std_test_score'])/(5**0.5)
+thr = best_r2 - sem
+n_1se = int(cv_res.loc[cv_res['mean_test_score']>=thr, 'param_pca__n_components'].min())
+pipe.set_params(pca__n_components=n_1se)
+pipe.fit(X_train_pcr, y_train)
+print(best_r2)
+print(best_n)
+print(n_1se)
